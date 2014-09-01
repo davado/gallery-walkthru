@@ -1,0 +1,50 @@
+body {
+  padding-top: 50px;
+}
+.starter-template {
+  padding: 40px 15px;
+  text-align: center;
+}
+
+
+/* ==========================
+ * Custom CSS here
+ * ========================== */
+.navbar {
+  display:none;
+}
+
+#imageArea {
+  height: 100%;
+  width: 100%;
+  background: black;
+  
+}
+
+#arrowArea {
+
+   position: absolute;
+   bottom:20px;
+   right:20px;
+}
+
+#arrowArea img {
+    opacity: 0.1;
+}
+
+#arrowArea a.activated img {
+    opacity: 0.4;
+}
+#arrowArea a.activated img:hover {
+    opacity: 0.7;
+}
+
+#arrowArea a:hover {
+  cursor:default;
+}
+#arrowArea a {
+  outline: none;
+}
+#arrowArea a.activated:hover {
+  cursor:pointer;
+}
