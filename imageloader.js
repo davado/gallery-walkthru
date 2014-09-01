@@ -1,4 +1,4 @@
-var imagePath = "images/walk-thru-";
+var imagePath = "images/1024/walk-thru-";
 var singleImages = [10,11,13,14,15,20,21,22,26,27,28,29,40,41,42,44,46,48,49,51,54,55];
 var circuitImages = ["01","02","04","07","09",12,19,24,25,35,36,38,44,47,50,52,53,"08","09",64];
 
