@@ -65,13 +65,19 @@ body {
 }
 #imgB {
 }
+#exitLink {
+  position:absolute;
+  bottom: 10px;
+  right: 20px;
+  z-index: 50;
+}
 
 #arrowArea {
 
    position: absolute;
    bottom:20px;
    right:20px;
-   right: calc(50% - 110px);
+   right: calc(50% - 112px);
    z-index: 50;
 }
 
