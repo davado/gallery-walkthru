@@ -3,7 +3,7 @@ var singleImages = [10,11,13,14,15,20,21,22,26,27,28,29,40,41,42,44,46,48,49,51,
 var circuitImages = ["01","02","04","07","09",12,19,24,25,35,36,38,44,47,50,52,53,"08","09",64];
 
 var exitURL = "/";
-
+var cachedImages = [];
 var moveMap = {
   "p01":{"a1":"02"},
   "p02":{"a1":"04"},
@@ -135,6 +135,23 @@ var displayObject = {
     
   },
   
+  cacheImage: function(imageNumber) {
+    
+    if ( this.checkCached(imageNumber) === -1 ){
+       
+      newElement = "<img class=\"" + this.getImageClass(imageNumber) + "\" src=\"" +
+                    imagePath + imageNumber + ".jpg\" />"; 
+      
+       $(newElement).insertAfter("#cache1");
+       cachedImages.push(imageNumber);
+    }
+  },
+  
+  checkCached: function(imageNumber) {
+    chCache = $.inArray(imageNumber, cachedImages);
+    return chCache;
+  },
+  
   // keep maybe, for future changes to navigation.
   getTrackChoice: function(num) {
     if( this.currentTrack === "circuit" ) {
@@ -188,6 +205,9 @@ var displayObject = {
     $(arrowID).addClass("activated");
     
     if( image !== "00" ) {
+      //caching
+      this.cacheImage(image);
+      
     // add triggers/on statement, callback?
       $(arrowID).click( function() {
         // load the image, as triggered by click event...
@@ -196,6 +216,8 @@ var displayObject = {
         // temporary fix, need to set href after other elements are loaded.
         $(arrowID).attr("href","#"+image);
       });
+      
+      // image number is 00
     } else {
       $(arrowID).click( function() {
         // temporary fix, need to set href after other elements are loaded.
