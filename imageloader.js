@@ -2,6 +2,8 @@ var imagePath = "images/1024/walk-thru-";
 var singleImages = [10,11,13,14,15,20,21,22,26,27,28,29,40,41,42,44,46,48,49,51,54,55];
 var circuitImages = ["01","02","04","07","09",12,19,24,25,35,36,38,44,47,50,52,53,"08","09",64];
 
+var exitURL = "/";
+
 var moveMap = {
   "p01":{"a1":"02"},
   "p02":{"a1":"04"},
@@ -47,13 +49,14 @@ var moveMap = {
   "p55":{"a8":53,"a4":54,"a6":"08"},
   "p57":{"a8":58,"a1":47,"a3":53, "a4":35},
   "p58":{"a8":"04","a2":57, "a4":36,"a1":47,"a3":53},
-  "p63":{"a8":"04","a2":64}
+  "p63":{"a8":"04","a2":64},
+  "p64":{"a2":"00"}
   
   
 }
 // end moveMap
 
-var imgInitialOpacity = "style=\"visibility:none\" ";
+var imgInitialOpacity = "style=\"opacity:0\" ";
 
 
 $(document).ready(function(){
@@ -62,8 +65,6 @@ $(document).ready(function(){
   
 });
 
-
-//
 var displayObject = {
   
   // properties
@@ -73,42 +74,6 @@ var displayObject = {
   nextImageID: "imgB",
   previousImage: "",
   
-  
-  onImageLoad: function(){
-    this.show({effect:"fade",easing:"swing",duration:"500"})
-
-  },
-  
-  // toggle and return the nextImageID
-  getNextImageID: function() {
-    if(this.currentImageID === "imgA") {
-      this.nextImageID = "imgB";
-    }
-    else {
-      this.nextImageID = "imgA";
-    }
-    return this.nextImageID;
-  },
-  
-  loadFirstImage: function() {
-    
-    if ( this.getURLHash() !== "" )
-    {
-      console.log(this.getURLHash());
-      this.loadImage(this.getURLHash());
-    } else {
-    
-      if ( $( "#imageArea" ).length ) {
-    
-        $("#imageArea").html( this.getImage("01") );
-      
-        // temporary testing
-        this.showImageA();
-      
-      };
-      
-    }
-  },
   
   getURLHash:function() {
     var pageURL = window.location.href;
@@ -125,22 +90,52 @@ var displayObject = {
     return imageID;
   },
   
+  // toggle and return the nextImageID
+  getNextImageID: function() {
+    if(this.currentImageID === "imgA") {
+      this.nextImageID = "imgB";
+    }
+    else {
+      this.nextImageID = "imgA";
+    }
+    return this.nextImageID;
+  },
+  
+  setCurrentImageID: function(id) {
+    this.currentImageID = ( this.currentImageID === "imgA" ) ? "imgB" : "imgA";
+  },
+  
+  loadFirstImage: function() {
+    
+    if ( this.getURLHash() !== "" )
+    {
+      //console.log(this.getURLHash());
+      this.loadImage(this.getURLHash());
+    } else {
+    
+      if ( $( "#imageArea" ).length ) {
+    
+        $(this.loadImage("01")).insertAfter("#"+this.currentImageID);    
+
+      };
+      
+    }
+  },
+  
   loadImage: function(imageNumber) {
-    console.log("loadImage, imgNum: " + imageNumber);
-    $("#imageArea").html( this.getImage(imageNumber) );
-   // this.getURLHash();
+
+    $(this.getImage(imageNumber)).insertAfter("#"+this.currentImageID);    
+    $("#"+this.currentImageID).attr("style","z-index:10");
+    //fadeout current img then remove on complete.
+    $("#"+this.currentImageID).fadeOut("slow", function(){
+      this.remove();
+    });
+    this.setCurrentImageID();
     this.getNext();
     
   },
   
-  // temporary testing  
-  showImageA: function() {
-    // console.log("c: " + this.currentImageID + ". iClass: " + this.imageClass);
-    $("#" + this.currentImageID ).show({effect:"fade",easing:"swing",duration:"500" });
-    this.getNext();
-  },
-
-  // this might be temporary, not essential
+  // keep maybe, for future changes to navigation.
   getTrackChoice: function(num) {
     if( this.currentTrack === "circuit" ) {
       return circuitImages[num];
@@ -151,12 +146,11 @@ var displayObject = {
   },
   
   getImage: function(num) {  
-    
     imgID = this.getNextImageID();
     newElement = "<img id=\""+imgID+"\" width=\"100%\" height=\"100%\" " +
-                  
+    "style=\"z-index:5;\" " +
                   "class=\"" + this.getImageClass(num) + "\" src=\"" +
-                  imagePath + num + ".jpg\" />";
+                  imagePath + num + ".jpg\" />"; 
     return newElement;
   },
   
@@ -169,44 +163,45 @@ var displayObject = {
     // first clear all activated Buttons
     this.deactivateAllButtons();
     
-    // get currentImage and parse info
+    // get currentImage number from imageClass
     imageNum = this.imageClass.split("-");
     imageName = "p" + imageNum[1].toString();
-    //console.log("Image Name is " + imageName.toString());
-    
        
     // get map of options for currentImage
     moveOptions = moveMap[imageName];
-    
-    //console.log(moveOptions);
-    
-    //add .onClick on <a> to get the next imageURL
+        
+    //add click event on <a> to get the next imageURL
     for (var key in moveOptions) {
       if (moveOptions.hasOwnProperty(key)) {
         
         button = key.replace("a","#arrow-");
         nextImage = moveOptions[key];
-        //nextImage = this.getImage(moveOptions[key]);
+
         this.activateButton(button,nextImage);
-        // console.log("button: " + button, "nextImage: "+ nextImage);
+
       }
-    }
-    // activate buttons to options
-    
+    }    
   },
 
   
   activateButton: function (arrowID, image) {
     $(arrowID).addClass("activated");
     
+    if( image !== "00" ) {
     // add triggers/on statement, callback?
-    $(arrowID).click( function() {
-      // load the image, as triggered by click event...
-       displayObject.loadImage(image);
+      $(arrowID).click( function() {
+        // load the image, as triggered by click event...
+        displayObject.loadImage(image);
        
-       // temporary fix, need to set href after other elements are loaded.
-       $(arrowID).attr("href","#"+image);
-    });
+        // temporary fix, need to set href after other elements are loaded.
+        $(arrowID).attr("href","#"+image);
+      });
+    } else {
+      $(arrowID).click( function() {
+        // temporary fix, need to set href after other elements are loaded.
+        $(arrowID).attr("href",exitURL);
+      });
+    }
     
     
   },
@@ -219,13 +214,10 @@ var displayObject = {
         var arrowID = "#arrow-"+i.toString();
        // $(arrowID).attr("href","#");
         $(arrowID).removeClass("activated");
-        $(arrowID).off('click');
-        
-        
-      };
+        $(arrowID).off('click');  
+      };      
       
     };
-    
   },
   //end deactivate
   
