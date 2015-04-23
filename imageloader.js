@@ -81,7 +81,7 @@ var displayObject = {
     var imageID;
     if (imageIDarr.length === 2) {
       imageID = imageIDarr[1];
-      console.log(imageID);
+      //console.log(imageID);
              
     } else {
       console.log("image hash invalid, discard");
@@ -133,6 +133,12 @@ var displayObject = {
     this.setCurrentImageID();
     this.getNext();
     
+    // Check canvas.   Reset canvas if id changes.
+    // console.log("loadImage function: id ", imageNumber);
+    canvas.checkForNewImage( imageNumber );
+    
+    
+    
   },
   
   cacheImage: function(imageNumber) {
@@ -177,9 +183,10 @@ var displayObject = {
   },
   
   getNext: function() {
+    
     // first clear all activated Buttons
     this.deactivateAllButtons();
-    
+        
     // get currentImage number from imageClass
     imageNum = this.imageClass.split("-");
     imageName = "p" + imageNum[1].toString();
