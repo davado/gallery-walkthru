@@ -6,7 +6,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="Orange Civic Gallery Exhibition: Things I've Seen by Luke Wong, Photographer">
     <meta name="author" content="Luke Wong">
-    <link rel="icon" href="bootstrap/favicon.ico">
+    <!--
+      <link rel="icon" href="bootstrap/favicon.ico">
+    -->
 
     <title>Luke Wong: Things I've Seen</title>
 
@@ -15,7 +17,8 @@
 
     <!-- Custom styles for this template -->
     <link href="starter-template.css" rel="stylesheet">
-
+    <link href="canvas.css" rel="stylesheet">
+    
     <!-- IE10 viewport hack for Surface/desktop Windows 8 bug -->
     <script src="assets/js/ie10-viewport-bug-workaround.js"></script>
 
@@ -32,7 +35,8 @@
           <div id="imageArea">
             <img id="imgA" />
             <!-- images go here -->  
-        </div>
+          </div>
+          <canvas id="imgCanvas" width="1024" height="683"></canvas>
         
           <div id="arrowArea">
             <div class="row top-row">
@@ -67,7 +71,7 @@
     <script src="assets/js/jquery-ui-1.11.1/jquery-ui.min.js"></script>
  
     <script src="imageloader.js"></script>
-    
+    <script src="canvasdraw.js"></script>    
   </body>
 </html>
 
