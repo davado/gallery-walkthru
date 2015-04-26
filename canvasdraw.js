@@ -5,7 +5,7 @@ $(document).ready( function() {
     function(event) {
       canvas.getPos(event);
   });
-  
+    
 });
 $(window).resize( function() {
   canvas.onResize( displayObject.getURLHash() );
@@ -29,7 +29,8 @@ var canvas = {
   shapeCount: 0, // number of shapes completed on this imageId.
   pid: "p", // page id.
   previousId: 0,
-  register: {}
+  register: {},
+  imageID: ""
   
 };
 
@@ -39,7 +40,15 @@ canvas.initialize = function() {
     this.setContext(this.imageCanvas);
     this.rect = this.setRect(this.imageCanvas);
     this.checkForNewImage( this.getId );
-  };
+    
+    canvas.imageCanvas.addEventListener('mouseover', 
+      function(event) {
+        if(event.region) {
+          console.log('mouseover region', event.region);
+        }
+    });
+    
+};
 
 canvas.checkForNewImage = function(id){
   // check for page change. If previousId is not Id, then reset canvas.
@@ -125,7 +134,7 @@ canvas.restorePrevious = function(id) {
   for( var key in imageMaps ) {
     if( imageMaps.hasOwnProperty(key) ) {
       console.log("redraw: ", imageMaps[key].toString() );
-      canvas.redraw( this.context, imageMaps[key] );
+      canvas.redraw( this.context, imageMaps[key], key );
 
       // restore the shapeCount.
       this.shapeCount++;
@@ -140,8 +149,8 @@ canvas.onResize = function(id) {
   console.log("resize:reg:", JSON.stringify(this.register));
 };
 
-canvas.redraw = function( context, mArray ) {
-
+canvas.redraw = function( context, mArray, imageId ) {
+  var textX = 0, textY = 0;
   var arrLength = mArray.length; // should be 4, could be more
 
   for( var i = 0; i < arrLength; i++ ) {
@@ -157,11 +166,25 @@ canvas.redraw = function( context, mArray ) {
     } 
     // draw
       context.lineTo(coord[0], coord[1] );
-
+      
+      // calc text position
+      if( i === 0 || i === 2 ) {
+        textX += coord[0]/2;
+        textY += coord[1]/2;
+      }
+      
     // finish
     if (i === arrLength-1 ) {
       context.closePath();
       context.fill();
+      // required: enable flag in chrome://flags for .addHitRegion 
+      context.addHitRegion({'id': imageId, 'cursor': 'pointer'});
+
+      // add name to shape
+      context.font="14px Arial";
+      context.fillStyle = "black";
+      context.textAlign = 'center';
+      context.fillText(imageId, textX, textY );
     } 
   }
 };
@@ -198,7 +221,7 @@ canvas.setCanvasDimensions = function() {
 
 canvas.setContext = function (element) {
   if(element.getContext){
-    this.context = element.getContext('2d');    
+    this.context = element.getContext('2d');  
   }
 };
 
@@ -247,7 +270,7 @@ canvas.getPos = function (event){
 canvas.dropMarker = function(context, x, y){
   var ctx = context;
   var polyFinished = false;
-    
+  
   //marker, first marker is green.
   ctx.fillStyle = (this.step === 0) ? "yellow" : "orange";
   ctx.fillRect(x-3,y-3,5,5);
@@ -267,10 +290,15 @@ canvas.dropMarker = function(context, x, y){
     this.step++;
     
   } else if ( polyFinished ) {
-    ctx.closePath();
-    ctx.stroke();
+    // ctx.closePath();
     ctx.fillStyle = "rgba(255,0,0,0.2)";
+    ctx.stroke();
     ctx.fill();
+    
+    //experimental.
+    ctx.addHitRegion({"id": this.imageId });
+    
+    
     this.step = 0;
     this.shapeCount++;
   }
@@ -290,7 +318,7 @@ canvas.updateRegister = function(coordArr) {
     
   id = ( id === "" ) ? "01" : id;
   pid = this.pid = "p"+id;
-  imageId = pid + "-" + this.shapeCount;
+  imageId = this.imageId = pid + "-" + this.shapeCount;
   
   if( ! this.register[pid] ){
     this.register[pid] = {};
