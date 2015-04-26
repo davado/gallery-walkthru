@@ -10,16 +10,6 @@ $(document).ready( function() {
 $(window).resize( function() {
   canvas.onResize( displayObject.getURLHash() );
 });
-/* *
- * TODO: On window resize, recalculate the factor using .calcCanvasScale();
- *  Then .reset() and .redraw() the canvas
- */
-
-/* *
- * TODO: Add scaleIn and scaleOut for coords going in and out of .register
- */  
-
-// $(window).resize(event, ); //https://api.jquery.com/resize/
 
 
 var canvas = {
@@ -79,10 +69,8 @@ canvas.checkForNewImage = function(id){
   alt: http://jsperf.com/cloning-an-object/2
 */
   
-canvas.getRegisterEntry = function(id){
-  // var regCopy = clone( this.register["p"+id] );
+canvas.getRegisterEntry = function(id){  
   var regCopy = this.register["p"+id];
-  // console.log("registeredPid", JSON.stringify(regCopy));
   return regCopy;
 };
 
@@ -147,7 +135,7 @@ canvas.restorePrevious = function(id) {
 
 canvas.onResize = function(id) {
   canvas.initialize();
-  // canvas.reset(this.context);
+  canvas.reset(this.context);
   canvas.restorePrevious(id);
   console.log("resize:reg:", JSON.stringify(this.register));
 };
