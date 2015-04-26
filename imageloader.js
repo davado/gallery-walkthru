@@ -53,7 +53,7 @@ var moveMap = {
   "p64":{"a2":"00"}
   
   
-}
+};
 // end moveMap
 
 var imgInitialOpacity = "style=\"opacity:0\" ";
@@ -117,7 +117,7 @@ var displayObject = {
     
         $(this.loadImage("01")).insertAfter("#"+this.currentImageID);    
 
-      };
+      }
       
     }
   },
@@ -165,7 +165,7 @@ var displayObject = {
     }
     else {
       return singleImages[num];
-    };
+    }
   },
   
   getImage: function(num) {  
@@ -244,9 +244,9 @@ var displayObject = {
        // $(arrowID).attr("href","#");
         $(arrowID).removeClass("activated");
         $(arrowID).off('click');  
-      };      
+      }      
       
-    };
+    }
   },
   //end deactivate
   

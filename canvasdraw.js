@@ -1,24 +1,15 @@
 $(document).ready( function() {
   canvas.initialize();
-  //var ctx = canvas.getContext;
-  //var can = canvas.imageCanvas;
   
   canvas.imageCanvas.addEventListener('click',
     function(event) {
       canvas.getPos(event);
   });
   
-//  console.log("can is: "); console.log(can); 
-  //console.log("ctx is: "); console.log(ctx); 
-  
-
-/*
-  console.log("global: ",imageWidth, " - object:", 
-    canvas.imageWidth, " - window:", window.imageWidth);
-*/
-  
 });
-
+$(window).resize( function() {
+  canvas.onResize( displayObject.getURLHash() );
+});
 /* *
  * TODO: On window resize, recalculate the factor using .calcCanvasScale();
  *  Then .reset() and .redraw() the canvas
@@ -48,7 +39,6 @@ var canvas = {
   shapeCount: 0, // number of shapes completed on this imageId.
   pid: "p", // page id.
   previousId: 0,
-  tempReg:{},
   register: {}
   
 };
@@ -59,17 +49,14 @@ canvas.initialize = function() {
     this.setContext(this.imageCanvas);
     this.rect = this.setRect(this.imageCanvas);
     this.checkForNewImage( this.getId );
-    
-    //console.log(this.imageCanvas);
-};
+  };
 
 canvas.checkForNewImage = function(id){
   // check for page change. If previousId is not Id, then reset canvas.
-    
-  console.log( "previous: ", canvas.previousId );
 
+  // console.log( "previous: ", canvas.previousId );
 
-  if ( canvas.previousId === 0 ) { // === 0 || canvas.previousId === "") {
+  if ( canvas.previousId === 0 ) {
     canvas.previousId = id;
   }
 
@@ -85,50 +72,103 @@ canvas.checkForNewImage = function(id){
   canvas.previousId = id;
 
 };
-canvas.restorePrevious = function(id) {
-  
-  var imageMaps = this.register["p"+id];
-  if (! imageMaps ) {
-    console.log( "image ", id ," not in register");
-    return;
-  }
-  
-  
-  // console.log("imageMaps: ", JSON.stringify(imageMaps) );
 
-  // imageMaps[key] refers to [[],[],[],[]]
-  for( var key in imageMaps ) {
-    if( imageMaps.hasOwnProperty(key) ) {
-      
-      // console.log("key: " , key, JSON.stringify(imageMaps[key]) );
-      
-      
-      // restore the shapeCount.
-      this.shapeCount++;
-      canvas.redraw( this.context, imageMaps[key] );
+/*
+  Clone the register object.
+  search: "js object clone".
+  alt: http://jsperf.com/cloning-an-object/2
+*/
+  
+canvas.getRegisterEntry = function(id){
+  // var regCopy = clone( this.register["p"+id] );
+  var regCopy = this.register["p"+id];
+  // console.log("registeredPid", JSON.stringify(regCopy));
+  return regCopy;
+};
+
+function clone( obj ) {
+  var target = {};
+  for(var i in obj) {
+    if ( obj.hasOwnProperty(i) ) {
+      target[i] = obj[i];
     }
   }
+  return target;
 }
 
-canvas.onResize = function() {
-  this.calcCanvasScale;
-}
+Object.defineProperties(Object, {
+  'extend': {
+   'configurable': true,
+   'enumerable': false,
+   'value': function extend(what, wit) {
+    var extObj, witKeys = Object.keys(wit);
+ 
+    extObj = Object.keys(what).length ? Object.clone(what) : {};
+ 
+    witKeys.forEach(function(key) {
+     Object.defineProperty(extObj, key, Object.getOwnPropertyDescriptor(wit, key));
+    });
+ 
+    return extObj;
+   },
+   'writable': true
+  },
+  'clone': {
+   'configurable': true,
+   'enumerable': false,
+   'value': function clone(obj) {
+    return Object.extend({}, obj);
+   },
+   'writable': true
+  }
+ });
+
+// END CLONE: 
+
+canvas.restorePrevious = function(id) {
+  console.log("restore:id:", id);
+  var imageMaps = canvas.getRegisterEntry(id);
+  
+  if (! imageMaps ) {
+    console.log( "image ", id ," has no shapes in the register.");
+    return;
+  }
+
+  for( var key in imageMaps ) {
+    if( imageMaps.hasOwnProperty(key) ) {
+      console.log("redraw: ", imageMaps[key].toString() );
+      canvas.redraw( this.context, imageMaps[key] );
+
+      // restore the shapeCount.
+      this.shapeCount++;
+    }
+  }
+};
+
+canvas.onResize = function(id) {
+  canvas.initialize();
+  // canvas.reset(this.context);
+  canvas.restorePrevious(id);
+  console.log("resize:reg:", JSON.stringify(this.register));
+};
 
 canvas.redraw = function( context, mArray ) {
-  // just redraw the shapes.
+
   var arrLength = mArray.length; // should be 4, could be more
-  console.log('redrawing ', mArray);
-  
+
   for( var i = 0; i < arrLength; i++ ) {
     
-    // start
+    // copy coords to a new array, preserving the register array.
+    coord = new Array(mArray[i][0],mArray[i][1]);
+    coord = this.scaleCoordToView( coord );
+    
     if (i === 0){
       context.fillStyle = "rgba(0,255,0,0.2)";
       context.beginPath();
       
     } 
     // draw
-      context.lineTo(mArray[i][0], mArray[i][1] );
+      context.lineTo(coord[0], coord[1] );
 
     // finish
     if (i === arrLength-1 ) {
@@ -136,21 +176,20 @@ canvas.redraw = function( context, mArray ) {
       context.fill();
     } 
   }
-  
-  //console.log("image: ", JSON.stringify(image));
-}
+};
 
 canvas.reset = function(context) {
+
   context.clearRect(0,0, this.imageCanvas.width, this.imageCanvas.height);
   
   this.step = 0;
   this.shapeCount = 0;
-  // this.redraw();
+  
 };
 
 canvas.getId = function() {
   return displayObject.getURLHash();
-}
+};
 
 
 canvas.setCanvasDimensions = function() {
@@ -184,29 +223,30 @@ canvas.calcCanvasScale = function() {
     // factor = small < 1, big = > 1
     this.factorWidth = this.imageWidth/this.iWidth;
     this.factorHeight = this.imageHeight/this.iHeight;
-    console.log(this.factorWidth, ":", this.factorHeight);
+    console.log("Scale: ",this.factorWidth, ":", this.factorHeight);
+    console.log("Dimen: ", this.imageWidth, this.imageHeight );
 };
 
 // convert for register
-canvas.scaleIn = function(value, axis) {
-  var i = value;
-  i = (axis = "x") ? i / this.factorWidth : i / this.factorHeight;
-  i = Math.floor(i);
+canvas.scaleCoordToReg = function(coordArr) {
+  var i = coordArr;
+  i[0] = Math.floor(i[0] / this.factorWidth );
+  i[1] = Math.floor(i[1] / this.factorHeight);
   return i;
-}
+};
 
 //convert value out from register
-canvas.scaleOut = function(value, axis) {
-  var i = value;
-  i = (axis = "x") ? i * this.factorWidth : i * this.factorHeight;
-  i = Math.floor(i);
+canvas.scaleCoordToView = function(coordArr) {
+  var i = coordArr;
+  i[0] = Math.floor(i[0] * this.factorWidth );
+  i[1] = Math.floor(i[1] * this.factorHeight);
   return i;
-}
+};
 
 canvas.setRect = function(element) {
   var rect = element.getBoundingClientRect();
   return rect; 
-}
+};
 
 canvas.getPos = function (event){
   var rect = this.rect;
@@ -216,25 +256,19 @@ canvas.getPos = function (event){
   this.dropMarker(this.context, x, y);
 };
 
-// DROP MARKER
 canvas.dropMarker = function(context, x, y){
   var ctx = context;
   var polyFinished = false;
-  
+    
   //marker, first marker is green.
-  ctx.fillStyle = (this.step === 0) ? "green" : "blue";
+  ctx.fillStyle = (this.step === 0) ? "yellow" : "orange";
   ctx.fillRect(x-3,y-3,5,5);
   
   if(this.step === 0){
     ctx.beginPath();
   }
 
-   /* *
-    * if the click x/y are in canvas.register{pageID:{picID:{x,y}}}, 
-    * and this.step === 3, do context.stroke() and/or fill();
-    */
-  
-  polyFinished = this.updateRegister(x, y);
+  polyFinished = this.updateRegister( [x, y] );
   
   if(this.step === 0 ){
     ctx.moveTo( x, y );
@@ -252,18 +286,18 @@ canvas.dropMarker = function(context, x, y){
     this.step = 0;
     this.shapeCount++;
   }
-  
-  //console.log("Mark: ",x,y);
-  
-}
+};
 
 
 // returns true if shape completed, reset shapeCount.
-canvas.updateRegister = function(x,y) {
+canvas.updateRegister = function(coordArr) {
   var id        = this.getId();
   var pid       = this.pid;
   var imageId   = "";
-  var coords    = [x, y];
+  var coords    = coordArr;
+  
+  // Normalize the coordinates for the register.
+  coords = this.scaleCoordToReg(coords);
 //  console.log("id",id,", pid,", pid,", imageId,", this.imageId,", coords, ", coords);
     
   id = ( id === "" ) ? "01" : id;
@@ -287,13 +321,14 @@ canvas.updateRegister = function(x,y) {
     
   /*
     compare the first arr in imageId with coords.  
-      clicks within 3px of origin will return true;
+      clicks within 5px of origin will return true;
   */
+  clickRegion = 5;
   arr = this.register[pid][imageId][0];
   arr2 = this.register[pid][imageId][1];
-  if( arr2 && Math.abs( coords[0] - arr[0]) < 3 && Math.abs(coords[1] - arr[1]) < 3 ) {
+  if( arr2 && Math.abs( coords[0] - arr[0]) < clickRegion && Math.abs(coords[1] - arr[1]) < clickRegion ) {
 
-    console.log( imageId, JSON.stringify(this.register) );
+    console.log("RegNewShape: ", pid, JSON.stringify(this.register) );
     return true;
 
   } else if (this.step !== 0 ) {
@@ -304,14 +339,14 @@ canvas.updateRegister = function(x,y) {
   return false;
   
   // console.log("Image ID: ", id );
-} 
+}; 
 
 /*
   a helper function.
 */
 var isEmpty = function(obj){
   if (Object.getOwnPropertyNames(obj).length > 0) return false || true;
-}
+};
 
 
 
@@ -326,7 +361,5 @@ coord - x1, y1, x2, y2...
   OUTPUT x/y coordinates must be calc'd with Math(floor(x*factorW)) before entering in the coordinates Register.
   or else we do a before and after scaling-factor register.
 */
-
-var dump = {};
 
 
