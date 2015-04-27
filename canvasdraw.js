@@ -47,13 +47,27 @@ canvas.initialize = function() {
           console.log('mouseover region', event.region);
         }
     });
-    
+
+    retrieveData();
+
+};
+
+canvas.setRegister = function( obj ) {
+
+  if(obj !== undefined){
+
+    canvas.register = obj;
+    canvas.reset(this.context);
+    canvas.restorePrevious(displayObject.getURLHash());
+
+  } else {
+    console.log("obj is undefined. setreg.");
+  }
+
 };
 
 canvas.checkForNewImage = function(id){
   // check for page change. If previousId is not Id, then reset canvas.
-
-  // console.log( "previous: ", canvas.previousId );
 
   if ( canvas.previousId === 0 ) {
     canvas.previousId = id;
@@ -142,6 +156,12 @@ canvas.restorePrevious = function(id) {
   }
 };
 
+
+canvas.rebuildCanvas = function(){
+  canvas.reset(canvas.context);
+  canvas.restorePrevious(displayObject.getURLHash());
+};
+
 canvas.onResize = function(id) {
   canvas.initialize();
   canvas.reset(this.context);
@@ -154,25 +174,25 @@ canvas.redraw = function( context, mArray, imageId ) {
   var arrLength = mArray.length; // should be 4, could be more
 
   for( var i = 0; i < arrLength; i++ ) {
-    
+
     // copy coords to a new array, preserving the register array.
     coord = new Array(mArray[i][0],mArray[i][1]);
     coord = this.scaleCoordToView( coord );
-    
+
     if (i === 0){
       context.fillStyle = "rgba(0,255,0,0.2)";
       context.beginPath();
-      
+
     } 
-    // draw
+      // draw
       context.lineTo(coord[0], coord[1] );
-      
+
       // calc text position
       if( i === 0 || i === 2 ) {
         textX += coord[0]/2;
         textY += coord[1]/2;
       }
-      
+
     // finish
     if (i === arrLength-1 ) {
       context.closePath();
@@ -208,15 +228,15 @@ canvas.setCanvasDimensions = function() {
     //set canvas dimensions to same as responsively sized image dimensions
     this.image = document.getElementById('imageArea');
     this.imageCanvas = document.getElementById('imgCanvas');
-        
+
     this.imageWidth = this.image.offsetWidth;    
     this.imageHeight = this.image.offsetHeight;
-    
+
     console.log("image area dimensions: ", this.imageWidth,"/",this.imageHeight);
-    
+
     this.imageCanvas.height = this.imageHeight;
     this.imageCanvas.width = this.imageWidth;
-    
+
 };
 
 canvas.setContext = function (element) {
@@ -270,37 +290,38 @@ canvas.getPos = function (event){
 canvas.dropMarker = function(context, x, y){
   var ctx = context;
   var polyFinished = false;
-  
+
   //marker, first marker is green.
   ctx.fillStyle = (this.step === 0) ? "yellow" : "orange";
   ctx.fillRect(x-3,y-3,5,5);
-  
+
   if(this.step === 0){
     ctx.beginPath();
   }
 
   polyFinished = this.updateRegister( [x, y] );
-  
+
   if(this.step === 0 ){
     ctx.moveTo( x, y );
     this.step++;
-  
+
   } else if (! polyFinished ) {
     ctx.lineTo( x, y );
     this.step++;
-    
+
   } else if ( polyFinished ) {
     // ctx.closePath();
     ctx.fillStyle = "rgba(255,0,0,0.2)";
     ctx.stroke();
     ctx.fill();
-    
+
     //experimental.
     ctx.addHitRegion({"id": this.imageId });
-    
-    
+
     this.step = 0;
     this.shapeCount++;
+    saveData(this.register);
+    this.rebuildCanvas();
   }
 };
 
@@ -311,15 +332,14 @@ canvas.updateRegister = function(coordArr) {
   var pid       = this.pid;
   var imageId   = "";
   var coords    = coordArr;
-  
+
   // Normalize the coordinates for the register.
   coords = this.scaleCoordToReg(coords);
-//  console.log("id",id,", pid,", pid,", imageId,", this.imageId,", coords, ", coords);
-    
+
   id = ( id === "" ) ? "01" : id;
   pid = this.pid = "p"+id;
   imageId = this.imageId = pid + "-" + this.shapeCount;
-  
+
   if( ! this.register[pid] ){
     this.register[pid] = {};
   } 
@@ -330,11 +350,11 @@ canvas.updateRegister = function(coordArr) {
     //... or should this be a string literal?
     this.register[pid][imageId] = [coords];
   }
-  
+
   if(this.step === 3 && "not finished" ) {
     // rebuild the canvas from register.
   }
-    
+
   /*
     compare the first arr in imageId with coords.  
       clicks within 5px of origin will return true;
@@ -345,6 +365,7 @@ canvas.updateRegister = function(coordArr) {
   if( arr2 && Math.abs( coords[0] - arr[0]) < clickRegion && Math.abs(coords[1] - arr[1]) < clickRegion ) {
 
     console.log("RegNewShape: ", pid, JSON.stringify(this.register) );
+    
     return true;
 
   } else if (this.step !== 0 ) {
@@ -353,7 +374,7 @@ canvas.updateRegister = function(coordArr) {
   }
 
   return false;
-  
+
   // console.log("Image ID: ", id );
 }; 
 

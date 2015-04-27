@@ -47,6 +47,8 @@ $(document).ready( function() {
   setEditButton();
 });
 
+var somethingChanged = false;
+
 var editNames = function() {
   return "<button id='btn_edit_image_refs'>Edit Image Names</button>";
 };
@@ -59,7 +61,7 @@ var setEditButton = function() {
 var addButton = function( obj, func, func2 ) {
   
   var btn = obj;
-  btn.click( 
+  btn.click(
     function() {
       if (!func2) {
         func();
@@ -75,12 +77,12 @@ var addEditButton = function( btnName, onClickFunc ){
   
   var button  = '<button id="'+btnName+'">'+btnName+'</button>';
 
-  $('#change_table').after( button );  
+  $('#change_table').after( button );
 
   if(document.getElementById(btnName)) {
     $('#'+btnName).click( function(){
       onClickFunc();
-    } );    
+    } );
   } else {
     console.log("no button by id: ", btnName);
   }
@@ -89,7 +91,6 @@ var addEditButton = function( btnName, onClickFunc ){
 var onSaveClick = function() {
   
   var id = 'p'+ displayObject.getURLHash();
-  var somethingChanged = false;
   // changeKeys
   $('input').each(
     function() {
@@ -125,6 +126,7 @@ var onCancelClick = function() {
 };
 
 var saveData = function(obj) {
+  somethingChange = false;
   $.ajax({
       type: "POST",
       url: "./filesave.php",
@@ -137,7 +139,7 @@ var saveData = function(obj) {
           console.log(e.message);
       }
   });
-
+  
 };
 
 var retrieveData = function() {
@@ -162,22 +164,22 @@ var retrieveData = function() {
 var changeKeys = function(id, oldkey, newkey) {
 
   var somethingChanged = true;
-  if( oldkey !== newkey && newkey !== "" ){
+  if( oldkey !== newkey && newkey.trim !== "" ){
     var a = canvas.register[id];
-    
+
     if (newkey === 'delete') {
       delete a[oldkey]; 
-    
+
     } else if( !a[newkey] ){
       a[newkey] = a[oldkey];
       delete a[oldkey];
-      
+
     } else {
-      console.log("error: Newkey already in register.");
+      console.log("\"" + newkey + "\" already in register.");
       somethingChanged = false;
     } 
+    console.log(oldkey, "->" , newkey);
     return somethingChanged;
-    
   }
 };
 
@@ -189,7 +191,7 @@ var buildChangeTable = function(id) {
 
   // insert the cells for table body.
   if(document.getElementById('change_body') ) {
-    $('#change_body').append( buildRows( id ));    
+    $('#change_body').append( buildRows( id ));
   } else {
     console.log('table>tbody#change_body not ready');
   }
@@ -212,21 +214,15 @@ var buildChangeTable = function(id) {
 var buildRows = function(pageId) {
   console.log("buildRows: pageId", pageId);
   var oldName = "";
-  var inputText = "";  
+  var inputText = "";
   var rows = "";
   
   var shapeReg = canvas.register["p"+pageId];
   console.log(JSON.stringify(shapeReg));
   
   for(var key in shapeReg) {
-    console.log("oldName:", key);
-    //make plain <td>
     oldName = "<td>" + key + "</td>";
-    
-    // make input <td>
     inputText = "<td>" + "<input type='text' name='"+key+"' id='"+key+"'>"+"</td>";
-    
-    //wrap in <tr> and append to rows
     rows += "<tr>"+oldName+inputText+"</tr>";
   }
   return rows;
