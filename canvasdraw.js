@@ -39,7 +39,7 @@ canvas.initialize = function() {
     this.calcCanvasScale();
     this.setContext(this.imageCanvas);
     this.rect = this.setRect(this.imageCanvas);
-    this.checkForNewImage( this.getId );
+    this.checkForNewImage( this.getId() );
     
     canvas.imageCanvas.addEventListener('mouseover', 
       function(event) {
@@ -58,8 +58,7 @@ canvas.setRegister = function( obj ) {
 
     canvas.register = obj;
     canvas.reset(this.context);
-    canvas.restorePrevious(displayObject.getURLHash());
-
+    canvas.restorePrevious(this.getId());
   } else {
     console.log("obj is undefined. setreg.");
   }
@@ -68,7 +67,7 @@ canvas.setRegister = function( obj ) {
 
 canvas.checkForNewImage = function(id){
   // check for page change. If previousId is not Id, then reset canvas.
-
+  var pid ="p"+id;
   if ( canvas.previousId === 0 ) {
     canvas.previousId = id;
   }
@@ -78,9 +77,17 @@ canvas.checkForNewImage = function(id){
   }
   for (var key in this.register ) {
     if( this.register.hasOwnProperty(key)){
-      canvas.restorePrevious(id);
+      if(key === pid) {
+        console.log("key,pid",key, pid);
+        canvas.restorePrevious(id);
+      } else { console.log("key !== pid"); }
     }
   }
+
+  if( ! this.register[pid] ){
+    this.register[pid] = {"map":{}, "name":""};
+    console.log("newPid", this.register[pid]);
+  } 
 
   canvas.previousId = id;
 
@@ -92,8 +99,9 @@ canvas.checkForNewImage = function(id){
   alt: http://jsperf.com/cloning-an-object/2
 */
   
-canvas.getRegisterEntry = function(id){  
-  var regCopy = this.register["p"+id];
+canvas.getRegisterPid = function(id){
+  var pid = "p"+id;
+  var regCopy = this.register[pid];
   return regCopy;
 };
 
@@ -137,8 +145,10 @@ Object.defineProperties(Object, {
 // END CLONE: 
 
 canvas.restorePrevious = function(id) {
-  var imageMaps = canvas.getRegisterEntry(id);
-  console.log("restore:id:", imageMaps.map);
+  var imageMaps = canvas.getRegisterPid(id);
+  if(imageMaps){
+    console.log("restore:id:", imageMaps);    
+  }
   
   if (! imageMaps ) {
     console.log( "image ", id ," has no shapes in the register.");
@@ -159,7 +169,7 @@ canvas.restorePrevious = function(id) {
 
 canvas.rebuildCanvas = function(){
   canvas.reset(canvas.context);
-  canvas.restorePrevious(displayObject.getURLHash());
+  canvas.restorePrevious(this.getId());
 };
 
 canvas.onResize = function(id) {
@@ -172,7 +182,11 @@ canvas.onResize = function(id) {
 canvas.redraw = function( context, mArray, imageId ) {
   var textX = 0, textY = 0;
   var arrLength = mArray.length; // should be 4, could be more
-
+  
+  var reg = this.getRegisterPid(this.getId()); 
+  var targetName = reg.map[imageId].targetName;
+  console.log('targetName: ', targetName);
+  var imageName = (targetName.trim() !== "") ? targetName : imageId ;
   for( var i = 0; i < arrLength; i++ ) {
 
     // copy coords to a new array, preserving the register array.
@@ -204,7 +218,7 @@ canvas.redraw = function( context, mArray, imageId ) {
       context.font="14px Arial";
       context.fillStyle = "black";
       context.textAlign = 'center';
-      context.fillText(imageId, textX, textY );
+      context.fillText(imageName, textX, textY );
     } 
   }
 };
@@ -212,13 +226,12 @@ canvas.redraw = function( context, mArray, imageId ) {
 canvas.reset = function(context) {
 
   context.clearRect(0,0, this.imageCanvas.width, this.imageCanvas.height);
-  
   this.step = 0;
   this.shapeCount = 0;
-  
 };
 
 canvas.getId = function() {
+  console.log(displayObject.getURLHash());
   return displayObject.getURLHash();
 };
 
@@ -229,7 +242,7 @@ canvas.setCanvasDimensions = function() {
     this.image = document.getElementById('imageArea');
     this.imageCanvas = document.getElementById('imgCanvas');
 
-    this.imageWidth = this.image.offsetWidth;    
+    this.imageWidth = this.image.offsetWidth;
     this.imageHeight = this.image.offsetHeight;
 
     console.log("image area dimensions: ", this.imageWidth,"/",this.imageHeight);
@@ -241,13 +254,13 @@ canvas.setCanvasDimensions = function() {
 
 canvas.setContext = function (element) {
   if(element.getContext){
-    this.context = element.getContext('2d');  
+    this.context = element.getContext('2d');
   }
 };
 
 canvas.getContext = function() {
   //returns an Object OR undefined.
-  return this.context; 
+  return this.context;
 };
 
 canvas.calcCanvasScale = function() {
@@ -340,9 +353,6 @@ canvas.updateRegister = function(coordArr) {
   pid = this.pid = "p"+id;
   imageId = this.imageId = pid + "-" + this.shapeCount;
 
-  arr = this.register[pid].map[imageId].area[0];
-  arr2 = this.register[pid].map[imageId].area[1];
-
   if( ! this.register[pid] ){
     this.register[pid] = {"map":{}, "name":""};
   } 
@@ -352,6 +362,8 @@ canvas.updateRegister = function(coordArr) {
   if(this.step === 0) {
     this.register[pid].map[imageId].area = [coords];
   }
+  arr = this.register[pid].map[imageId].area[0];
+  arr2 = this.register[pid].map[imageId].area[1];
 
   /*
     compare the first arr in imageId with coords.  
@@ -365,10 +377,8 @@ canvas.updateRegister = function(coordArr) {
     return true;
 
     // trap 2nd clicks too close to the starting point. 
-  } else if(this.step === 1) {
-    if(Math.abs(arr[0] - coords[0]) > clickRegion && Math.abs() > clickRegion ) {
-      this.register[pid].map[imageId].area.push(coords);      
-    } 
+  } else if( this.step === 1 && Math.abs(arr[0] - coords[0]) > clickRegion && Math.abs(arr[1] - coords[1]) > clickRegion ) {
+      this.register[pid].map[imageId].area.push(coords);
 
   } else if (this.step !== 0 ) {
 

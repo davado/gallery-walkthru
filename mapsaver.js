@@ -64,11 +64,13 @@ var addButton = function( obj, func, func2 ) {
   btn.click(
     function() {
       if (!func2) {
-        func();
+        bool = func();
       } else {
-        func(func2());
+        bool = func(func2());
       }
-      this.remove();
+      if (bool) {
+        this.remove();
+      }
     }
   );
 };
@@ -90,15 +92,15 @@ var addEditButton = function( btnName, onClickFunc ){
 
 var onSaveClick = function() {
   
-  var id = 'p'+ displayObject.getURLHash();
-  // changeKeys
+  var pid = 'p'+ canvas.getId();
+  // changeRegValues
   $('input').each(
     function() {
       var changedVal = false;
-      var oldkey = $(this).attr('id');
-      var newkey = this.value;
-      // changeKeys returns true if register was changed
-      changedVal = changeKeys(id, oldkey , newkey);
+      var areaId = $(this).attr('id');
+      var newTargetName = this.value;
+      // changeRegValues returns true if register was changed
+      changedVal = changeRegValues(pid, areaId , newTargetName);
       if(changedVal){
         somethingChanged = true;
       }
@@ -146,7 +148,7 @@ var retrieveData = function() {
   $.ajax({
     dataType: "json",
     type: "GET",
-    url: "http://lkw.com.au/filesave.php",
+    url: "./filesave.php",
     success: function(data, obj){
       obj = data;
       // return val is async
@@ -161,69 +163,94 @@ var retrieveData = function() {
 
 
 //source: http://stackoverflow.com/questions/4647817/javascript-object-rename-key
-var changeKeys = function(id, oldkey, newkey) {
-
+var changeRegValues = function(pid, areaId, newTargetName) {
+/*
+  TODO: need to check if newTargetName is unique amongst all names.
+*/
   var somethingChanged = true;
-  if( oldkey !== newkey && newkey.trim !== "" ){
-    var a = canvas.register[id].map;
+  if( newTargetName.trim() !== "" ){
+    var a = canvas.register[pid];
+    console.log("a",a);
+    if (newTargetName === 'delete') {
+      delete a.map[areaId]; 
 
-    if (newkey === 'delete') {
-      delete a[oldkey]; 
+      // change the regPidName
+    } else if(areaId === "pidName" && newTargetName !== a.name ) {
+      a.name = newTargetName;
 
-    } else if( !a[newkey] ){
-      a[newkey] = a[oldkey];
-      delete a[oldkey];
+      // don't copy, just rename the areaId.targetName
+    } else if( a.map[areaId].targetName !== newTargetName ){
+      a.map[areaId].targetName = newTargetName; 
+      console.log(areaId, "->" , newTargetName);
 
     } else {
-      console.log("\"" + newkey + "\" already in register.");
+      console.log("\"" + newTargetName + "\" already in register.");
       somethingChanged = false;
     } 
-    console.log(oldkey, "->" , newkey);
+    
     return somethingChanged;
   }
 };
 
 var buildChangeTable = function(id) {
-
-  // build table skeleton. 
-  $('#imgCanvas').after( '<table id="change_table"></table>');
-  $('#change_table').append('<thead><tr><td>Old Ref</td><td>New Ref</td></tr></thead><tbody id="change_body"></tbody>');
-
-  // insert the cells for table body.
-  if(document.getElementById('change_body') ) {
-    $('#change_body').append( buildRows( id ));
-  } else {
-    console.log('table>tbody#change_body not ready');
-  }
-  addEditButton('save', onSaveClick);
-  addEditButton('cancel', onCancelClick);
   
-  $('input').each( function(index, element) {
-    $(element).keyup(function(event) {
-      if( event.keyCode == 13){
-        onSaveClick();
-        console.log("Enter pressed");
-      }
-    });
-  });
+  var rows = buildRows( id );
+  if( rows === "" || rows === undefined || rows === null) {
+    return false;
+  } else {
+    // build table skeleton. 
+    $('#imgCanvas').after( '<table id="change_table"></table>');
+    $('#change_table').append('<thead><tr><td>Old Ref</td><td>New Ref</td></tr></thead><tbody id="change_body"></tbody>');
 
+    // insert the cells for table body.
+    if(document.getElementById('change_body') ) {
+      $('#change_body').append( rows );
+    } else {
+      console.log('table>tbody#change_body not ready');
+    }
+    addEditButton('save', onSaveClick);
+    addEditButton('cancel', onCancelClick);
+  
+    $('input').each( function(index, element) {
+      $(element).keyup(function(event) {
+        if( event.keyCode == 13){
+          onSaveClick();
+          console.log("Enter pressed");
+        }
+      });
+    });
+    return true;
+  }
 };
 
 
 
-var buildRows = function(pageId) {
-  console.log("buildRows: pageId", pageId);
+var buildRows = function(id) {
+  console.log("buildRows: id", id);
+  var pid = "p"+id;
   var oldName = "";
   var inputText = "";
   var rows = "";
-  
-  var shapeReg = canvas.register["p"+pageId].map;
-  console.log(JSON.stringify(shapeReg));
-  
-  for(var key in shapeReg) {
-    oldName = "<td>" + key + "</td>";
-    inputText = "<td>" + "<input type='text' name='"+key+"' id='"+key+"'>"+"</td>";
-    rows += "<tr>"+oldName+inputText+"</tr>";
+  var registerPidMap;
+  var pageNameValue; 
+  if(canvas.register[pid]) {
+    registerPidMap = canvas.register["p"+id].map;
+    pageNameValue = canvas.register["p"+id].name;
   }
-  return rows;
+  if ( registerPidMap === undefined ) {
+    return;
+
+  } else {
+    //name-row
+    rows = "<tr><td>Name | "+pageNameValue+"</td><td>";
+    rows += "<input type='text' name='pidName' id='pidName' value='"+pageNameValue+"'>";
+    rows += "</td></tr>";
+
+    for(var imageId in registerPidMap) {
+      oldName = "<td>" + imageId + " | <span class=\"emphasis\">" + registerPidMap[imageId].targetName + "</span></td>";
+      inputText = "<td>" + "<input type='text' name='"+imageId+"' id='"+imageId+"'>"+"</td>";
+      rows += "<tr>"+oldName+inputText+"</tr>";
+    }
+    return rows;
+  }
 };
