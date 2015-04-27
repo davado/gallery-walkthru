@@ -165,7 +165,7 @@ var changeKeys = function(id, oldkey, newkey) {
 
   var somethingChanged = true;
   if( oldkey !== newkey && newkey.trim !== "" ){
-    var a = canvas.register[id];
+    var a = canvas.register[id].map;
 
     if (newkey === 'delete') {
       delete a[oldkey]; 
@@ -217,7 +217,7 @@ var buildRows = function(pageId) {
   var inputText = "";
   var rows = "";
   
-  var shapeReg = canvas.register["p"+pageId];
+  var shapeReg = canvas.register["p"+pageId].map;
   console.log(JSON.stringify(shapeReg));
   
   for(var key in shapeReg) {

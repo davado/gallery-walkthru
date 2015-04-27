@@ -137,18 +137,18 @@ Object.defineProperties(Object, {
 // END CLONE: 
 
 canvas.restorePrevious = function(id) {
-  console.log("restore:id:", id);
   var imageMaps = canvas.getRegisterEntry(id);
+  console.log("restore:id:", imageMaps.map);
   
   if (! imageMaps ) {
     console.log( "image ", id ," has no shapes in the register.");
     return;
   }
 
-  for( var key in imageMaps ) {
-    if( imageMaps.hasOwnProperty(key) ) {
-      console.log("redraw: ", imageMaps[key].toString() );
-      canvas.redraw( this.context, imageMaps[key], key );
+  for( var key in imageMaps.map ) {
+    if( imageMaps.map.hasOwnProperty(key) ) {
+      console.log("redraw: ", imageMaps.map[key].area.toString() );
+      canvas.redraw( this.context, imageMaps.map[key].area, key );
 
       // restore the shapeCount.
       this.shapeCount++;
@@ -340,19 +340,17 @@ canvas.updateRegister = function(coordArr) {
   pid = this.pid = "p"+id;
   imageId = this.imageId = pid + "-" + this.shapeCount;
 
+  arr = this.register[pid].map[imageId].area[0];
+  arr2 = this.register[pid].map[imageId].area[1];
+
   if( ! this.register[pid] ){
-    this.register[pid] = {};
+    this.register[pid] = {"map":{}, "name":""};
   } 
-  if( ! this.register[pid][imageId] ){
-    this.register[pid][imageId] = [];
+  if( ! this.register[pid].map[imageId] ){
+    this.register[pid].map[imageId] = {"area":[], "targetName":""};
   } 
   if(this.step === 0) {
-    //... or should this be a string literal?
-    this.register[pid][imageId] = [coords];
-  }
-
-  if(this.step === 3 && "not finished" ) {
-    // rebuild the canvas from register.
+    this.register[pid].map[imageId].area = [coords];
   }
 
   /*
@@ -360,18 +358,23 @@ canvas.updateRegister = function(coordArr) {
       clicks within 5px of origin will return true;
   */
   clickRegion = 5;
-  arr = this.register[pid][imageId][0];
-  arr2 = this.register[pid][imageId][1];
   if( arr2 && Math.abs( coords[0] - arr[0]) < clickRegion && Math.abs(coords[1] - arr[1]) < clickRegion ) {
 
-    console.log("RegNewShape: ", pid, JSON.stringify(this.register) );
+    console.log("RegNewShape: ", pid, JSON.stringify(this.register[pid].map) );
     
     return true;
 
+    // trap 2nd clicks too close to the starting point. 
+  } else if(this.step === 1) {
+    if(Math.abs(arr[0] - coords[0]) > clickRegion && Math.abs() > clickRegion ) {
+      this.register[pid].map[imageId].area.push(coords);      
+    } 
+
   } else if (this.step !== 0 ) {
-      //... or should this be a string literal?
-      this.register[pid][imageId].push(coords);
-  }
+
+      this.register[pid].map[imageId].area.push(coords);
+
+  } 
 
   return false;
 
