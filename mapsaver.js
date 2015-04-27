@@ -35,23 +35,19 @@ var editNames = function() {
 
 var setEditButton = function() {
   $('#exitLink').after( editNames ); 
-  console.log("add EDIT button");
   addButton( $('#btn_edit_image_refs'), buildChangeTable, displayObject.getURLHash ); 
 };
 
 var addButton = function( obj, func, func2 ) {
-  console.log("addButton called!");
-  var btn = obj;
   
+  var btn = obj;
   btn.click( 
     function() {
       if (!func2) {
-        func();        
+        func();
       } else {
         func(func2());
       }
-      console.log("addButton(button) clicked!");
-      
       this.remove();
     }
   );
@@ -75,48 +71,45 @@ var addEditButton = function( btnName, onClickFunc ){
 var onSaveClick = function() {
   
   var id = 'p'+ displayObject.getURLHash();
-  
+  var somethingChanged = false;
   // changeKeys
   $('input').each(
     function() {
+      var changedVal = false;
       var oldkey = $(this).attr('id');
       var newkey = this.value;
-
-      changeKeys(id, oldkey , newkey);
+      // changeKeys returns true if register was changed
+      changedVal = changeKeys(id, oldkey , newkey);
+      if(changedVal){
+        somethingChanged = true;
+      }
     }
   );
-  // save table.
-  $.ajax({
-      type: "POST",
-      url: "./filesave.php",
-      data: {regData: JSON.stringify(canvas.register)},
-      success: function(data){
-          alert('Register saved to file.');
-          console.log(JSON.stringify(canvas.register));
-      },
-      error: function(e){
-          console.log(e.message);
-      }
-  });
-  
+
+  if(somethingChanged) {
+    saveData(canvas.register);
+    canvas.rebuildCanvas();
+  }
   
   onCancelClick();
 };
 
 var onCancelClick = function() {
+
   // remove the buttons
   $('button').each(function(){
     this.remove();
   });
   $("#change_table").remove();
+
   // restore the click to edit button.
   setEditButton();
 };
 
 //source: http://stackoverflow.com/questions/4647817/javascript-object-rename-key
 var changeKeys = function(id, oldkey, newkey) {
-  console.log("changeKeys!", id, oldkey, newkey);
-  
+
+  var somethingChanged = true;
   if( oldkey !== newkey && newkey !== "" ){
     var a = canvas.register[id];
     
@@ -129,21 +122,18 @@ var changeKeys = function(id, oldkey, newkey) {
       
     } else {
       console.log("error: Newkey already in register.");
+      somethingChanged = false;
     } 
+    return somethingChanged;
     
-    // TODO: redraw the canvas after changeKeys.
-    // TODO: call up the table again with new values, maybe via refresh()
-    // I REALLY NEED A MODEL->localStorage or php.
   }
 };
 
 var buildChangeTable = function(id) {
 
-
   // build table skeleton. 
   $('#imgCanvas').after( '<table id="change_table"></table>');
   $('#change_table').append('<thead><tr><td>Old Ref</td><td>New Ref</td></tr></thead><tbody id="change_body"></tbody>');
-
 
   // insert the cells for table body.
   if(document.getElementById('change_body') ) {
@@ -154,6 +144,15 @@ var buildChangeTable = function(id) {
   addEditButton('save', onSaveClick);
   addEditButton('cancel', onCancelClick);
   
+  $('input').each( function(index, element) {
+    $(element).keyup(function(event) {
+      if( event.keyCode == 13){
+        onSaveClick();
+        console.log("Enter pressed");
+      }
+    });
+  });
+
 };
 
 
