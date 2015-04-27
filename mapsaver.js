@@ -106,6 +106,40 @@ var onCancelClick = function() {
   setEditButton();
 };
 
+var saveData = function(obj) {
+  $.ajax({
+      type: "POST",
+      url: "./filesave.php",
+      data: {regData: JSON.stringify(obj)},
+      success: function(data){
+          console.log('Register saved to server file.');
+          console.log(JSON.stringify(obj));
+      },
+      error: function(e){
+          console.log(e.message);
+      }
+  });
+
+};
+
+var retrieveData = function() {
+  $.ajax({
+    dataType: "json",
+    type: "GET",
+    url: "http://lkw.com.au/filesave.php",
+    success: function(data, obj){
+      obj = data;
+      // return val is async
+      // returning the jsXHR obj fails, returns undefined.
+      canvas.setRegister(obj);
+    },
+    error: function(e) {
+      console.log(e.message);
+    }
+  });
+};
+
+
 //source: http://stackoverflow.com/questions/4647817/javascript-object-rename-key
 var changeKeys = function(id, oldkey, newkey) {
 
