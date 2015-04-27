@@ -1,19 +1,30 @@
 /*
   Model - save to localStorage.
   OR
-  Write to File
+  Write to File [DONE]
   OR
   Print to results screen.
 */
 
 /*
   Register will be populated with pid->imageId shapes, 
-  -> Save the register to file
-    -> Match shapes to image-IDs
+  -> Save the register to file [DONE - php file on server]
+    -> Match shapes to image-IDs [DONE]
       -> Edit the register 'pids' [DONE]
-        ->
-      -> Delete register entries.
+      -> Delete register entries.[DONE]
+      -> RETRIEVE saved register json at canvas.initialize [DONE]
+      -> On path close, redraw the canvas. [DONE]
+      -> I REALLY NEED A MODEL
+          ->localStorage 
+          -> or php. [DONE]
+
+  GENERATE MAP->AREAS
+  -> toggle canvas and map views
+  -> mapreader js to convert JSON to areas
+  -> Manually add and then rename all the shapes.
+  
 */
+
 $(document).ready( function() {
   setEditButton();
 });
