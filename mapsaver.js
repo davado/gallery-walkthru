@@ -17,6 +17,24 @@
       -> I REALLY NEED A MODEL
           ->localStorage 
           -> or php. [DONE]
+      -> JSON data -
+
+canvas.register {
+p04 { 
+  name: "topofstairs",
+  map: { 
+    "p04-1" : {
+      area: [[coordsArray]],
+      targetname: "coneyislandgirls"
+    },
+    "p04-2" : {
+      area:  [[coordsArray]] ,
+      targetname: "summernatstent"
+    },
+  }
+}
+
+click on area, find targetname, find name, find id, goto URL+#id. 
 
   GENERATE MAP->AREAS
   -> toggle canvas and map views
