@@ -44,7 +44,7 @@ canvas.initialize = function() {
     canvas.imageCanvas.addEventListener('mouseover', 
       function(event) {
         if(event.region) {
-          console.log('mouseover region', event.region);
+          //console.log('mouseover region', event.region);
         }
     });
 
@@ -60,7 +60,7 @@ canvas.setRegister = function( obj ) {
     canvas.reset(this.context);
     canvas.restorePrevious(this.getId());
   } else {
-    console.log("obj is undefined. setreg.");
+    //console.log("obj is undefined. setreg.");
   }
 
 };
@@ -78,7 +78,7 @@ canvas.checkForNewImage = function(id){
   for (var key in this.register ) {
     if( this.register.hasOwnProperty(key)){
       if(key === pid) {
-        console.log("key,pid",key, pid);
+        //console.log("key,pid",key, pid);
         canvas.restorePrevious(id);
       } else { console.log("key !== pid"); }
     }
@@ -86,7 +86,7 @@ canvas.checkForNewImage = function(id){
 
   if( ! this.register[pid] ){
     this.register[pid] = {"map":{}, "name":""};
-    console.log("newPid", this.register[pid]);
+    //console.log("newPid", this.register[pid]);
   } 
 
   canvas.previousId = id;
@@ -147,17 +147,17 @@ Object.defineProperties(Object, {
 canvas.restorePrevious = function(id) {
   var imageMaps = canvas.getRegisterPid(id);
   if(imageMaps){
-    console.log("restore:id:", imageMaps);    
+    //console.log("restore:id:", imageMaps);    
   }
   
   if (! imageMaps ) {
-    console.log( "image ", id ," has no shapes in the register.");
+    //console.log( "image ", id ," has no shapes in the register.");
     return;
   }
 
   for( var key in imageMaps.map ) {
     if( imageMaps.map.hasOwnProperty(key) ) {
-      console.log("redraw: ", imageMaps.map[key].area.toString() );
+      //console.log("redraw: ", imageMaps.map[key].area.toString() );
       canvas.redraw( this.context, imageMaps.map[key].area, key );
 
       // restore the shapeCount.
@@ -176,7 +176,7 @@ canvas.onResize = function(id) {
   canvas.initialize();
   canvas.reset(this.context);
   canvas.restorePrevious(id);
-  console.log("resize:reg:", JSON.stringify(this.register));
+  //console.log("resize:reg:", JSON.stringify(this.register));
 };
 
 canvas.redraw = function( context, mArray, imageId ) {
@@ -231,7 +231,7 @@ canvas.reset = function(context) {
 };
 
 canvas.getId = function() {
-  console.log(displayObject.getURLHash());
+  //console.log(displayObject.getURLHash());
   return displayObject.getURLHash();
 };
 
@@ -245,7 +245,7 @@ canvas.setCanvasDimensions = function() {
     this.imageWidth = this.image.offsetWidth;
     this.imageHeight = this.image.offsetHeight;
 
-    console.log("image area dimensions: ", this.imageWidth,"/",this.imageHeight);
+    //console.log("image area dimensions: ", this.imageWidth,"/",this.imageHeight);
 
     this.imageCanvas.height = this.imageHeight;
     this.imageCanvas.width = this.imageWidth;
@@ -267,8 +267,8 @@ canvas.calcCanvasScale = function() {
     // factor = small < 1, big = > 1
     this.factorWidth = this.imageWidth/this.iWidth;
     this.factorHeight = this.imageHeight/this.iHeight;
-    console.log("Scale: ",this.factorWidth, ":", this.factorHeight);
-    console.log("Dimen: ", this.imageWidth, this.imageHeight );
+    //console.log("Scale: ",this.factorWidth, ":", this.factorHeight);
+    //console.log("Dimen: ", this.imageWidth, this.imageHeight );
 };
 
 // convert for register
@@ -372,7 +372,7 @@ canvas.updateRegister = function(coordArr) {
   clickRegion = 5;
   if( arr2 && Math.abs( coords[0] - arr[0]) < clickRegion && Math.abs(coords[1] - arr[1]) < clickRegion ) {
 
-    console.log("RegNewShape: ", pid, JSON.stringify(this.register[pid].map) );
+    //console.log("RegNewShape: ", pid, JSON.stringify(this.register[pid].map) );
     
     return true;
 
