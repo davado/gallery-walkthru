@@ -170,16 +170,20 @@ var changeRegValues = function(pid, areaId, newTargetName) {
   var somethingChanged = true;
   if( newTargetName.trim() !== "" ){
     var a = canvas.register[pid];
-    console.log("a",a);
+
     if (newTargetName === 'delete') {
       delete a.map[areaId]; 
-
+      console.log(areaId, "->", newTargetName);
       // change the regPidName
-    } else if(areaId === "pidName" && newTargetName !== a.name ) {
-      a.name = newTargetName;
+    } else if(areaId === "pidName" ) {
+      if( newTargetName !== a.name ) {
+        a.name = newTargetName;
+      } else {
+        return false;
+      }
 
       // don't copy, just rename the areaId.targetName
-    } else if( a.map[areaId].targetName !== newTargetName ){
+    } else if( newTargetName !== a.map[areaId].targetName ){
       a.map[areaId].targetName = newTargetName; 
       console.log(areaId, "->" , newTargetName);
 
@@ -241,9 +245,9 @@ var buildRows = function(id) {
     return;
 
   } else {
-    //name-row
+    //name-row :: value='"+pageNameValue+"'
     rows = "<tr><td>Name | "+pageNameValue+"</td><td>";
-    rows += "<input type='text' name='pidName' id='pidName' value='"+pageNameValue+"'>";
+    rows += "<input type='text' name='pidName' id='pidName' >";
     rows += "</td></tr>";
 
     for(var imageId in registerPidMap) {

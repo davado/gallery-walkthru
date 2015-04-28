@@ -189,9 +189,9 @@ canvas.redraw = function( context, mArray, imageId ) {
   var textX = 0, textY = 0;
   var arrLength = mArray.length; // should be 4, could be more
   
-  var reg = this.getRegisterPid(this.getId()); 
-  var targetName = reg.map[imageId].targetName;
-  console.log('targetName: ', targetName);
+  //var reg = this.getRegisterPid(this.getId()); 
+  var targetName = this.register[imageId.split("-")[0]].map[imageId].targetName;
+  //console.log('targetName: ', targetName);
   var imageName = (targetName.trim() !== "") ? targetName : imageId ;
   for( var i = 0; i < arrLength; i++ ) {
 
