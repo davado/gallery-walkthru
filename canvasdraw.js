@@ -146,6 +146,7 @@ Object.defineProperties(Object, {
 
 canvas.restorePrevious = function(id) {
   var imageMaps = canvas.getRegisterPid(id);
+  var keyCounts = new Array();
   if(imageMaps){
     //console.log("restore:id:", imageMaps);    
   }
@@ -161,8 +162,17 @@ canvas.restorePrevious = function(id) {
       canvas.redraw( this.context, imageMaps.map[key].area, key );
 
       // restore the shapeCount.
-      this.shapeCount++;
+      keysplit = key.split("-");
+      if ( parseInt(keysplit[1]) > 0 ) {
+        keyCounts.push(parseInt(keysplit[1]));
+      }
     }
+  }
+  if(keyCounts.length > 0) {
+    console.log(keyCounts);
+    this.shapeCount = getMaxOfArray(keyCounts)+1;    
+  } else {
+    this.shapeCount = 1;
   }
 };
 
@@ -183,9 +193,9 @@ canvas.redraw = function( context, mArray, imageId ) {
   var textX = 0, textY = 0;
   var arrLength = mArray.length; // should be 4, could be more
   
-  var reg = this.getRegisterPid(this.getId()); 
-  var targetName = reg.map[imageId].targetName;
-  console.log('targetName: ', targetName);
+  //var reg = this.getRegisterPid(this.getId()); 
+  var targetName = this.register[imageId.split("-")[0]].map[imageId].targetName;
+  //console.log('targetName: ', targetName);
   var imageName = (targetName.trim() !== "") ? targetName : imageId ;
   for( var i = 0; i < arrLength; i++ ) {
 
@@ -398,6 +408,9 @@ var isEmpty = function(obj){
   if (Object.getOwnPropertyNames(obj).length > 0) return false || true;
 };
 
+function getMaxOfArray(numArray) {
+  return Math.max.apply(null, numArray);
+}
 
 
 /*
