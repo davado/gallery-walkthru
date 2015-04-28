@@ -146,6 +146,7 @@ Object.defineProperties(Object, {
 
 canvas.restorePrevious = function(id) {
   var imageMaps = canvas.getRegisterPid(id);
+  var keyCounts = new Array();
   if(imageMaps){
     //console.log("restore:id:", imageMaps);    
   }
@@ -161,9 +162,14 @@ canvas.restorePrevious = function(id) {
       canvas.redraw( this.context, imageMaps.map[key].area, key );
 
       // restore the shapeCount.
-      this.shapeCount++;
+      keysplit = key.split("-");
+      if ( parseInt(keysplit[1]) > 0 ) {
+        keyCounts.push(parseInt(keysplit[1]));
+      }
     }
   }
+  console.log(keyCounts);
+  this.shapeCount = getMaxOfArray(keyCounts)+1;
 };
 
 
@@ -398,6 +404,9 @@ var isEmpty = function(obj){
   if (Object.getOwnPropertyNames(obj).length > 0) return false || true;
 };
 
+function getMaxOfArray(numArray) {
+  return Math.max.apply(null, numArray);
+}
 
 
 /*
