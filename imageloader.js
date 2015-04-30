@@ -38,7 +38,7 @@ var moveMap = {
   "p42":{"a4":41,"a6":44,"a8":38},
   "p44":{"a4":42,"a6":47},
   "p46":{"a8":47,"a4":44,"a6":48},
-  "p47":{"a8":35,"a1":46,"a2":48,"a3":49,"a6":50,"a4":44},  
+  "p47":{"a8":35,"a1":46,"a2":48,"a3":49,"a6":50,"a4":44},
   "p48":{"a8":47,"a4":46,"a6":49},
   "p49":{"a8":47,"a4":48,"a6":51},
   "p50":{"a7":47,"a4":49,"a2":51,"a6":53},
@@ -51,8 +51,8 @@ var moveMap = {
   "p58":{"a8":"04","a2":57, "a4":36,"a1":47,"a3":53},
   "p63":{"a8":"04","a2":64},
   "p64":{"a2":"00"}
-  
-  
+
+
 };
 // end moveMap
 
@@ -60,21 +60,21 @@ var imgInitialOpacity = "style=\"opacity:0\" ";
 
 
 $(document).ready(function(){
-  
+
   displayObject.loadFirstImage();
-  
+
 });
 
 var displayObject = {
-  
+
   // properties
   currentTrack: "circuit",
   imageClass: "class-00",
   currentImageID: "imgA",
   nextImageID: "imgB",
   previousImage: "",
-  
-  
+
+
   getURLHash:function() {
     var pageURL = window.location.href;
     var imageIDarr = pageURL.split("#");
@@ -82,14 +82,14 @@ var displayObject = {
     if (imageIDarr.length === 2) {
       imageID = imageIDarr[1];
       //console.log(imageID);
-             
+
     } else {
       console.log("image hash invalid, discard");
       imageID = "";
     }
     return imageID;
   },
-  
+
   // toggle and return the nextImageID
   getNextImageID: function() {
     if(this.currentImageID === "imgA") {
@@ -100,31 +100,31 @@ var displayObject = {
     }
     return this.nextImageID;
   },
-  
+
   setCurrentImageID: function(id) {
     this.currentImageID = ( this.currentImageID === "imgA" ) ? "imgB" : "imgA";
   },
-  
+
   loadFirstImage: function() {
-    
+
     if ( this.getURLHash() !== "" )
     {
       //console.log(this.getURLHash());
       this.loadImage(this.getURLHash());
     } else {
-    
+
       if ( $( "#imageArea" ).length ) {
-    
-        $(this.loadImage("01")).insertAfter("#"+this.currentImageID);    
+
+        $(this.loadImage("01")).insertAfter("#"+this.currentImageID);
 
       }
-      
+
     }
   },
-  
+
   loadImage: function(imageNumber) {
 
-    $(this.getImage(imageNumber)).insertAfter("#"+this.currentImageID);    
+    $(this.getImage(imageNumber)).insertAfter("#"+this.currentImageID);
     $("#"+this.currentImageID).attr("style","z-index:10");
     //fadeout current img then remove on complete.
     $("#"+this.currentImageID).fadeOut("slow", function(){
@@ -132,32 +132,32 @@ var displayObject = {
     });
     this.setCurrentImageID();
     this.getNext();
-    
+
     // Check canvas.   Reset canvas if id changes.
     // console.log("loadImage function: id ", imageNumber);
     canvas.checkForNewImage( imageNumber );
-    
-    
-    
+
+
+
   },
-  
+
   cacheImage: function(imageNumber) {
-    
+
     if ( this.checkCached(imageNumber) === -1 ){
-       
+
       newElement = "<img class=\"" + this.getImageClass(imageNumber) + "\" src=\"" +
-                    imagePath + imageNumber + ".jpg\" />"; 
-      
+                    imagePath + imageNumber + ".jpg\" usemap='#pageMap' />";
+
        $(newElement).insertAfter("#cache1");
        cachedImages.push(imageNumber);
     }
   },
-  
+
   checkCached: function(imageNumber) {
     chCache = $.inArray(imageNumber, cachedImages);
     return chCache;
   },
-  
+
   // keep maybe, for future changes to navigation.
   getTrackChoice: function(num) {
     if( this.currentTrack === "circuit" ) {
@@ -167,63 +167,63 @@ var displayObject = {
       return singleImages[num];
     }
   },
-  
-  getImage: function(num) {  
+
+  getImage: function(num) {
     imgID = this.getNextImageID();
     newElement = "<img id=\""+imgID+"\" width=\"100%\" height=\"100%\" " +
     "style=\"z-index:5;\" " +
                   "class=\"" + this.getImageClass(num) + "\" src=\"" +
-                  imagePath + num + ".jpg\" />"; 
+                  imagePath + num + ".jpg\" usemap='#pageMap' />";
     return newElement;
   },
-  
+
   getImageClass: function(num){
-    this.imageClass = "image-" + num; 
+    this.imageClass = "image-" + num;
     return this.imageClass;
   },
-  
+
   getNext: function() {
-    
+
     // first clear all activated Buttons
     this.deactivateAllButtons();
-        
+
     // get currentImage number from imageClass
     imageNum = this.imageClass.split("-");
     imageName = "p" + imageNum[1].toString();
-       
+
     // get map of options for currentImage
     moveOptions = moveMap[imageName];
-        
+
     //add click event on <a> to get the next imageURL
     for (var key in moveOptions) {
       if (moveOptions.hasOwnProperty(key)) {
-        
+
         button = key.replace("a","#arrow-");
         nextImage = moveOptions[key];
 
         this.activateButton(button,nextImage);
 
       }
-    }    
+    }
   },
 
-  
+
   activateButton: function (arrowID, image) {
     $(arrowID).addClass("activated");
-    
+
     if( image !== "00" ) {
       //caching
       this.cacheImage(image);
-      
+
     // add triggers/on statement, callback?
       $(arrowID).click( function() {
         // load the image, as triggered by click event...
         displayObject.loadImage(image);
-       
+        mapbuild.rebuildMap(image); console.log("actBtn:rebuild",image);
         // temporary fix, need to set href after other elements are loaded.
         $(arrowID).attr("href","#"+image);
       });
-      
+
       // image number is 00
     } else {
       $(arrowID).click( function() {
@@ -231,23 +231,23 @@ var displayObject = {
         $(arrowID).attr("href",exitURL);
       });
     }
-    
-    
+
+
   },
-  
+
   deactivateAllButtons: function () {
-   
+
      if ( $(".activated").length ) {
-    
+
       for( var i=0;i<10;i++ ){
         var arrowID = "#arrow-"+i.toString();
        // $(arrowID).attr("href","#");
         $(arrowID).removeClass("activated");
-        $(arrowID).off('click');  
-      }      
-      
+        $(arrowID).off('click');
+      }
+
     }
   },
   //end deactivate
-  
+
 };
