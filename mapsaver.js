@@ -7,7 +7,7 @@
 */
 
 /*
-  Register will be populated with pid->imageId shapes, 
+  Register will be populated with pid->imageId shapes,
   -> Save the register to file [DONE - php file on server]
     -> Match shapes to image-IDs [DONE]
       -> Edit the register 'pids' [DONE]
@@ -15,14 +15,14 @@
       -> RETRIEVE saved register json at canvas.initialize [DONE]
       -> On path close, redraw the canvas. [DONE]
       -> I REALLY NEED A MODEL
-          ->localStorage 
+          ->localStorage
           -> or php. [DONE]
       -> JSON data -
 
 canvas.register {
-p04 { 
+p04 {
   name: "topofstairs",
-  map: { 
+  map: {
     "p04-1" : {
       area: [[coordsArray]],
       targetname: "coneyislandgirls"
@@ -34,13 +34,13 @@ p04 {
   }
 }
 
-click on area, find targetname, find name, find id, goto URL+#id. 
+click on area, find targetname, find name, find id, goto URL+#id.
 
   GENERATE MAP->AREAS
   -> toggle canvas and map views
   -> mapreader js to convert JSON to areas
   -> Manually add and then rename all the shapes.
-  
+
 */
 
 $(document).ready( function() {
@@ -54,12 +54,12 @@ var editNames = function() {
 };
 
 var setEditButton = function() {
-  $('#exitLink').after( editNames ); 
-  addButton( $('#btn_edit_image_refs'), buildChangeTable, displayObject.getURLHash ); 
+  $('#exitLink').after( editNames );
+  addButton( $('#btn_edit_image_refs'), buildChangeTable, displayObject.getURLHash );
 };
 
 var addButton = function( obj, func, func2 ) {
-  
+
   var btn = obj;
   btn.click(
     function() {
@@ -70,16 +70,22 @@ var addButton = function( obj, func, func2 ) {
       }
       if (bool) {
         this.remove();
+        // "Edit" button
+        $("#Edit").remove();
       }
     }
   );
 };
 
-var addEditButton = function( btnName, onClickFunc ){
-  
-  var button  = '<button id="'+btnName+'">'+btnName+'</button>';
+var addEditButton = function( btnName, onClickFunc, elemToAppendTo ){
 
-  $('#change_table').after( button );
+  var button  = '<button id="'+btnName+'">'+btnName+'</button>';
+  if(elemToAppendTo) {
+
+  } else {
+    elemToAppendTo = "change_table";
+  }
+  $('#'+elemToAppendTo).after( button );
 
   if(document.getElementById(btnName)) {
     $('#'+btnName).click( function(){
@@ -91,7 +97,7 @@ var addEditButton = function( btnName, onClickFunc ){
 };
 
 var onSaveClick = function() {
-  
+
   var pid = 'p'+ canvas.getId();
   // changeRegValues
   $('input').each(
@@ -111,19 +117,19 @@ var onSaveClick = function() {
     saveData(canvas.register);
     canvas.rebuildCanvas();
   }
-  
+
   onCancelClick();
 };
 
 var onCancelClick = function() {
 
   // remove the buttons
-  $('button').each(function(){
-    this.remove();
-  });
+  $("#save").remove();
+  $("#cancel").remove();
   $("#change_table").remove();
 
   // restore the click to edit button.
+  addEditButton("Edit", mapbuild.toggleCanvas, "exitLink");
   setEditButton();
 };
 
@@ -141,7 +147,7 @@ var saveData = function(obj) {
           console.log(e.message);
       }
   });
-  
+
 };
 
 var retrieveData = function() {
@@ -172,7 +178,7 @@ var changeRegValues = function(pid, areaId, newTargetName) {
     var a = canvas.register[pid];
 
     if (newTargetName === 'delete') {
-      delete a.map[areaId]; 
+      delete a.map[areaId];
       console.log(areaId, "->", newTargetName);
       // change the regPidName
     } else if(areaId === "pidName" ) {
@@ -184,25 +190,25 @@ var changeRegValues = function(pid, areaId, newTargetName) {
 
       // don't copy, just rename the areaId.targetName
     } else if( newTargetName !== a.map[areaId].targetName ){
-      a.map[areaId].targetName = newTargetName; 
+      a.map[areaId].targetName = newTargetName;
       console.log(areaId, "->" , newTargetName);
 
     } else {
       console.log("\"" + newTargetName + "\" already in register.");
       somethingChanged = false;
-    } 
-    
+    }
+
     return somethingChanged;
   }
 };
 
 var buildChangeTable = function(id) {
-  
+
   var rows = buildRows( id );
   if( rows === "" || rows === undefined || rows === null) {
     return false;
   } else {
-    // build table skeleton. 
+    // build table skeleton.
     $('#imgCanvas').after( '<table id="change_table"></table>');
     $('#change_table').append('<thead><tr><td>Old Ref</td><td>New Ref</td></tr></thead><tbody id="change_body"></tbody>');
 
@@ -212,9 +218,9 @@ var buildChangeTable = function(id) {
     } else {
       console.log('table>tbody#change_body not ready');
     }
-    addEditButton('save', onSaveClick);
-    addEditButton('cancel', onCancelClick);
-  
+    addEditButton('save', onSaveClick, "change_table");
+    addEditButton('cancel', onCancelClick, "change_table");
+
     $('input').each( function(index, element) {
       $(element).keyup(function(event) {
         if( event.keyCode == 13){
@@ -236,7 +242,7 @@ var buildRows = function(id) {
   var inputText = "";
   var rows = "";
   var registerPidMap;
-  var pageNameValue; 
+  var pageNameValue;
   if(canvas.register[pid]) {
     registerPidMap = canvas.register["p"+id].map;
     pageNameValue = canvas.register["p"+id].name;
