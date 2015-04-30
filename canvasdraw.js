@@ -411,18 +411,3 @@ var isEmpty = function(obj){
 function getMaxOfArray(numArray) {
   return Math.max.apply(null, numArray);
 }
-
-
-/*
-OUTPUT WILL BE FOR HTML MAP/AREA
-<area shape="poly" coord="x1,y1,x2,y2,x3,y3,x4,y4" href="#id-number"/>
-shape - poly: 
-coord - x1, y1, x2, y2...  
-*/
-
-/*
-  OUTPUT x/y coordinates must be calc'd with Math(floor(x*factorW)) before entering in the coordinates Register.
-  or else we do a before and after scaling-factor register.
-*/
-
-
