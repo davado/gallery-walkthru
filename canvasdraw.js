@@ -49,16 +49,16 @@ canvas.initialize = function() {
     });
 
     retrieveData();
-
 };
 
-canvas.setRegister = function( obj ) {
+canvas.setRegister = function( savedRegister ) {
 
-  if(obj !== undefined){
+  if(savedRegister !== undefined){
 
-    canvas.register = obj;
+    canvas.register = savedRegister;
     canvas.reset(this.context);
     canvas.restorePrevious(this.getId());
+    mapbuild.initialize();
   } else {
     //console.log("obj is undefined. setreg.");
   }
