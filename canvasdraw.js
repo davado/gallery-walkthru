@@ -168,8 +168,12 @@ canvas.restorePrevious = function(id) {
       }
     }
   }
-  console.log(keyCounts);
-  this.shapeCount = getMaxOfArray(keyCounts)+1;
+  if(keyCounts.length > 0) {
+    console.log(keyCounts);
+    this.shapeCount = getMaxOfArray(keyCounts)+1;    
+  } else {
+    this.shapeCount = 1;
+  }
 };
 
 
