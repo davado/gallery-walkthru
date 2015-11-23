@@ -16,3 +16,5 @@ A user provides an imageset.
 ## Example
 http://dhmw.net/things_ive_seen/
 
+Kinda works on: Google Chrome.
+
