@@ -12,3 +12,7 @@ A user provides an imageset.
 - User can create, update, delete - names, shapes.
 - Name and canvas coordinate data is persistent in client's brower localStorage.
 - Images and canvas coordinates must scale according to viewport.
+ 
+## Example
+http://dhmw.net/things_ive_seen/
+
